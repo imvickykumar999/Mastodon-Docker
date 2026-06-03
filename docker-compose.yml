@@ -1,67 +1,38 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:14-alpine
     container_name: mastodon-db
-    restart: always
     environment:
-      - POSTGRES_DB=mastodon
       - POSTGRES_USER=mastodon
-      - POSTGRES_PASSWORD=mastodon_db_password # Change this in production
+      - POSTGRES_PASSWORD=mastodon_db_password
+      - POSTGRES_DB=mastodon_production
     volumes:
-      - ./postgres:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mastodon"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
     container_name: mastodon-redis
-    restart: always
     volumes:
-      - ./redis:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - redis_data:/data
+    restart: unless-stopped
 
   mastodon:
     image: lscr.io/linuxserver/mastodon:latest
-    container_name: mastodon
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-      - LOCAL_DOMAIN=yourdomain.com # Change this to your domain name
-      - DB_HOST=db
-      - DB_USER=mastodon
-      - DB_NAME=mastodon
-      - DB_PASS=mastodon_db_password # Must match POSTGRES_PASSWORD above
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      # Security secrets (generate these on first install)
-      - SECRET_KEY_BASE=your_secret_key_base
-      - OTP_SECRET=your_otp_secret
-      - VAPID_PRIVATE_KEY=your_vapid_private_key
-      - VAPID_PUBLIC_KEY=your_vapid_public_key
-      # Mail/SMTP Settings (Required for registrations & notifications)
-      - SMTP_SERVER=smtp.mailgun.org
-      - SMTP_PORT=587
-      - SMTP_LOGIN=postmaster@yourdomain.com
-      - SMTP_PASSWORD=your_smtp_password
-      - SMTP_FROM_ADDRESS=notifications@yourdomain.com
+    container_name: mastodon-app
+    env_file:
+      - .env
     volumes:
-      - ./config:/config
+      - mastodon_config:/config
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  mastodon_config:
