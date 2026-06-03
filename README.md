@@ -1,5 +1,6 @@
 # Mastodon Docker
 
+<img width="1535" height="982" alt="image" src="https://github.com/user-attachments/assets/39988825-c754-4359-9d94-15f361dacf32" />
 <img width="1535" height="982" alt="image" src="https://github.com/user-attachments/assets/b63c1d4d-b746-4917-a223-923d2544d6ba" />
 
     I am hosting my own platform on VPS after 2 account got suspended.
