@@ -18,17 +18,7 @@ def load_env(env_path=".env"):
 load_env()
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 
-STATUS_TEXT = """
-Installed OpenClaw on my VPS and connected it straight to Telegram.
-
-Hosted my site at openclaw.imvickykumar999.dpdns.org and edited it entirely through chat — "fix nav bar", "change theme to navy blue", "center the div" — all via voice messages.
-
-No SSH. No manual coding. Just prompts.
-
-Even this Mastodon post was created and published by talking to OpenClaw on Telegram.
-
-Feels like the future. @openclaw
-"""
+STATUS_TEXT = "hello world"
 
 # Endpoints to attempt.
 # If running on the VPS itself, NAT loopback might block the public domain,
