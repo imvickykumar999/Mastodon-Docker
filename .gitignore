@@ -1,5 +1,5 @@
 .env
 vickykuma_onions.zip
-vickykumacjmps5ekfjmjlbhipnhclatvt2e7m5g4kgaisctq7yh4zad.onion/
 *.zip
-*.onion/
+hs_ed25519_secret_key
+vickykumacjmps5ekfjmjlbhipnhclatvt2e7m5g4kgaisctq7yh4zad.onion/hs_ed25519_secret_key
