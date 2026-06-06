@@ -1,7 +1,8 @@
 # Mastodon Docker
 
-<img width="1535" height="982" alt="image" src="https://github.com/user-attachments/assets/39988825-c754-4359-9d94-15f361dacf32" />
-<img width="1535" height="982" alt="image" src="https://github.com/user-attachments/assets/b63c1d4d-b746-4917-a223-923d2544d6ba" />
+    https://mastodon.24x7stream.shop/@24x7StreamShop@mastodon.social/116701866257549943
+
+<img width="1521" height="933" alt="image" src="https://github.com/user-attachments/assets/ac294a9e-6658-438c-88d7-3d0d2d72d4da" />
 
     I am hosting my own platform on VPS after 2 account got suspended.
     Do mastodon have rights to suspend mastodon of my own docker image hosted on my vps?
