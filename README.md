@@ -1,13 +1,20 @@
-# Mastodon Docker
-
-    https://mastodon.24x7stream.shop/@24x7StreamShop@mastodon.social/116701866257549943
-
-<img width="1521" height="933" alt="image" src="https://github.com/user-attachments/assets/ac294a9e-6658-438c-88d7-3d0d2d72d4da" />
-
-    I am hosting my own platform on VPS after 2 account got suspended.
-    Do mastodon have rights to suspend mastodon of my own docker image hosted on my vps?
-    
-**No, the Mastodon organization does not have the right or the technical ability to suspend or shut down the Mastodon software running on your own Virtual Private Server (VPS).**
+># Mastodon Docker
+>
+>     https://mastodon.24x7stream.shop/@24x7StreamShop@mastodon.social/116701866257549943
+>
+><img width="1521" height="933" alt="image" src="https://github.com/user-attachments/assets/ac294a9e-6658-438c-88d7-3d0d2d72d4da" />
+>
+>     http://vickykumacjmps5ekfjmjlbhipnhclatvt2e7m5g4kgaisctq7yh4zad.onion/@24x7stream@mastodon.24x7stream.shop
+>
+><img width="1536" height="970" alt="image" src="https://github.com/user-attachments/assets/b94fc484-7c84-468f-af51-23b9f1dcb776" />
+>
+>     I am hosting my own platform on VPS after 2 account got suspended.
+>
+><br>
+>
+>## Do mastodon have rights to suspend mastodon of my own docker image hosted on my vps?
+>
+>**No, the Mastodon organization does not have the right or the technical ability to suspend or shut down the Mastodon software running on your own Virtual Private Server (VPS).**
 
 ### Why You Are in Control
 
