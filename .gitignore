@@ -4,3 +4,4 @@ vickykuma_onions.zip
 hs_ed25519_secret_key
 vickykumacjmps5ekfjmjlbhipnhclatvt2e7m5g4kgaisctq7yh4zad.onion/hs_ed25519_secret_key
 *.log
+__pycache__/

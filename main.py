@@ -101,6 +101,65 @@ def fetch_traffic_summary():
             
     return msg
 
+def generate_embed_html(post_url):
+    match = re.match(r'^(https?://[^/]+)/(@[^/]+)/(\d+)', post_url)
+    if match:
+        base_url = match.group(1)
+        username = match.group(2)
+        domain = base_url.split("://")[-1]
+        base_url_slash = base_url if base_url.endswith("/") else base_url + "/"
+        
+        embed_html = (
+            f'<!DOCTYPE html>\n'
+            f'<html lang="en">\n'
+            f'<head>\n'
+            f'    <meta charset="UTF-8">\n'
+            f'    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+            f'    <title>Mastodon Post Embed</title>\n'
+            f'    <style>\n'
+            f'        html, body {{\n'
+            f'            margin: 0;\n'
+            f'            padding: 0;\n'
+            f'            width: 100%;\n'
+            f'            min-height: 100vh;\n'
+            f'            background-color: #f5f6f8;\n'
+            f'            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;\n'
+            f'        }}\n'
+            f'        .container {{\n'
+            f'            display: flex;\n'
+            f'            justify-content: center;\n'
+            f'            align-items: center;\n'
+            f'            width: 100%;\n'
+            f'            min-height: 100vh;\n'
+            f'            padding: 20px;\n'
+            f'            box-sizing: border-box;\n'
+            f'        }}\n'
+            f'        @media (max-width: 600px) {{\n'
+            f'            .container {{\n'
+            f'                align-items: flex-start;\n'
+            f'                padding: 10px;\n'
+            f'            }}\n'
+            f'        }}\n'
+            f'    </style>\n'
+            f'</head>\n'
+            f'<body>\n'
+            f'    <div class="container">\n'
+            f'        <blockquote class="mastodon-embed" data-embed-url="{post_url}/embed" '
+            f'style="background: #FCF8FF; border-radius: 8px; border: 1px solid #C9C4DA; margin: 0 auto; max-width: 540px; min-width: 270px; width: 100%; overflow: hidden; padding: 0;"> '
+            f'<a href="{post_url}" target="_blank" style="align-items: center; color: #1C1A25; display: flex; flex-direction: column; font-family: system-ui, -apple-system, BlinkMacSystemFont, \'Segoe UI\', Oxygen, Ubuntu, Cantarell, \'Fira Sans\', \'Droid Sans\', \'Helvetica Neue\', Roboto, sans-serif; font-size: 14px; justify-content: center; letter-spacing: 0.25px; line-height: 20px; padding: 24px; text-decoration: none;"> '
+            f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 79 75"><path d="M63 45.3v-20c0-4.1-1-7.3-3.2-9.7-2.1-2.4-5-3.7-8.5-3.7-4.1 0-7.2 1.6-9.3 4.7l-2 3.3-2-3.3c-2-3.1-5.1-4.7-9.2-4.7-3.5 0-6.4 1.3-8.6 3.7-2.1 2.4-3.1 5.6-3.1 9.7v20h8V25.9c0-4.1 1.7-6.2 5.2-6.2 3.8 0 5.8 2.5 5.8 7.4V37.7H44V27.1c0-4.9 1.9-7.4 5.8-7.4 3.5 0 5.2 2.1 5.2 6.2V45.3h8ZM74.7 16.6c.6 6 .1 15.7.1 17.3 0 .5-.1 4.8-.1 5.3-.7 11.5-8 16-15.6 17.5-.1 0-.2 0-.3 0-4.9 1-10 1.2-14.9 1.4-1.2 0-2.4 0-3.6 0-4.8 0-9.7-.6-14.4-1.7-.1 0-.1 0-.1 0s-.1 0-.1 0 0 .1 0 .1 0 0 0 0c.1 1.6.4 3.1 1 4.5.6 1.7 2.9 5.7 11.4 5.7 5 0 9.9-.6 14.8-1.7 0 0 0 0 0 0 .1 0 .1 0 .1 0 0 .1 0 .1 0 .1.1 0 .1 0 .1.1v5.6s0 .1-.1.1c0 0 0 0 0 .1-1.6 1.1-3.7 1.7-5.6 2.3-.8.3-1.6.5-2.4.7-7.5 1.7-15.4 1.3-22.7-1.2-6.8-2.4-13.8-8.2-15.5-15.2-.9-3.8-1.6-7.6-1.9-11.5-.6-5.8-.6-11.7-.8-17.5C3.9 24.5 4 20 4.9 16 6.7 7.9 14.1 2.2 22.3 1c1.4-.2 4.1-1 16.5-1h.1C51.4 0 56.7.8 58.1 1c8.4 1.2 15.5 7.5 16.6 15.6Z" fill="currentColor"/></svg> '
+            f'<div style="color: #787588; margin-top: 16px;">Post by {username}@{domain}</div> '
+            f'<div style="font-weight: 500;">View on Mastodon</div> '
+            f'</a> '
+            f'</blockquote>\n'
+            f'    </div>\n'
+            f'    <script data-allowed-prefixes="{base_url_slash}" async src="{base_url_slash}embed.js"></script>\n'
+            f'</body>\n'
+            f'</html>'
+        )
+        return embed_html
+    return post_url
+
 def post_status(status_text):
     payload = json.dumps({"status": status_text}).encode("utf-8")
     
@@ -159,47 +218,26 @@ def start_server():
     def post_traffic():
         status_text = fetch_traffic_summary()
         if not status_text:
-            return jsonify({
-                "success": False,
-                "error": "Failed to fetch traffic summary from page"
-            }), 500
+            return "Failed to fetch traffic summary from page", 500
             
         res = post_status(status_text)
         if res["success"]:
-            return jsonify({
-                "success": True,
-                "posted_content": status_text,
-                "post_url": res["url"],
-                "endpoint": res["endpoint"]
-            }), 200
+            return generate_embed_html(res["url"]), 200
         else:
-            return jsonify({
-                "success": False,
-                "error": res["error"]
-            }), 500
+            return res["error"], 500
             
     @app.route("/post", methods=["POST"])
     def post_custom():
         data = request.get_json(silent=True) or {}
         status_text = data.get("status")
         if not status_text:
-            return jsonify({
-                "success": False,
-                "error": "Missing 'status' in request body"
-            }), 400
+            return "Missing 'status' in request body", 400
             
         res = post_status(status_text)
         if res["success"]:
-            return jsonify({
-                "success": True,
-                "post_url": res["url"],
-                "endpoint": res["endpoint"]
-            }), 200
+            return generate_embed_html(res["url"]), 200
         else:
-            return jsonify({
-                "success": False,
-                "error": res["error"]
-            }), 500
+            return res["error"], 500
 
     print("Starting Flask API server on port 5050...")
     app.run(host="0.0.0.0", port=5050)
