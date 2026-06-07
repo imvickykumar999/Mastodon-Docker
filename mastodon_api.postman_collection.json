@@ -1,0 +1,93 @@
+{
+	"info": {
+		"_postman_id": "bfd60920-562a-4df4-a827-2c9388df6714",
+		"name": "Mastodon Traffic Poster API",
+		"description": "Collection for interacting with the Mastodon Traffic Poster API server running on port 5050.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Check API Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{vps_ip}}:5050/",
+					"protocol": "http",
+					"host": [
+						"{{vps_ip}}"
+					],
+					"port": "5050",
+					"path": [
+						""
+					]
+				},
+				"description": "Checks if the API server is online and running."
+			},
+			"response": []
+		},
+		{
+			"name": "Fetch & Post Traffic Summary",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://{{vps_ip}}:5050/post-traffic",
+					"protocol": "http",
+					"host": [
+						"{{vps_ip}}"
+					],
+					"port": "5050",
+					"path": [
+						"post-traffic"
+					]
+				},
+				"description": "Scrapes page views summary from https://24x7stream.shop/product/21/ and posts it to Mastodon."
+			},
+			"response": []
+		},
+		{
+			"name": "Post Custom Status",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\": \"Hello from my API server via Postman Collection!\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{vps_ip}}:5050/post",
+					"protocol": "http",
+					"host": [
+						"{{vps_ip}}"
+					],
+					"port": "5050",
+					"path": [
+						"post"
+					]
+				},
+				"description": "Posts a custom status message to your Mastodon instance."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "vps_ip",
+			"value": "localhost",
+			"type": "string",
+			"description": "IP address or domain of your VPS (default is localhost)"
+		}
+	]
+}
