@@ -99,7 +99,11 @@ def fetch_traffic_summary():
         for date, val in zip(weekly_dates, weekly_views):
             msg += f"  • {date}: {val} views\n"
             
-    return msg
+    chart_image_bytes = None
+    if weekly_dates and weekly_views:
+        chart_image_bytes = generate_chart_image(weekly_dates, weekly_views)
+        
+    return msg, chart_image_bytes
 
 def generate_embed_html(post_url):
     match = re.match(r'^(https?://[^/]+)/(@[^/]+)/(\d+)', post_url)
@@ -160,10 +164,105 @@ def generate_embed_html(post_url):
         return embed_html
     return post_url
 
-def post_status(status_text):
-    payload = json.dumps({"status": status_text}).encode("utf-8")
+def generate_chart_image(dates, views):
+    import urllib.parse
+    import urllib.request
     
+    try:
+        # Convert views list elements to integers
+        views = [int(v) for v in views]
+    except Exception:
+        pass
+
+    chart_config = {
+        "type": "line",
+        "data": {
+            "labels": dates,
+            "datasets": [{
+                "label": "Page Views",
+                "data": views,
+                "borderColor": "rgb(54, 162, 235)",
+                "backgroundColor": "rgba(54, 162, 235, 0.15)",
+                "fill": True,
+                "lineTension": 0.4,
+                "pointBackgroundColor": "rgb(54, 162, 235)",
+                "pointRadius": 4
+            }]
+        },
+        "options": {
+            "title": {
+                "display": True,
+                "text": "Last 7 Days Traffic",
+                "fontSize": 16,
+                "fontColor": "#333"
+            },
+            "scales": {
+                "xAxes": [{
+                    "scaleLabel": {
+                        "display": True,
+                        "labelString": "Date (MM-DD)"
+                    }
+                }],
+                "yAxes": [{
+                    "scaleLabel": {
+                        "display": True,
+                        "labelString": "Views"
+                    },
+                    "ticks": {
+                        "beginAtZero": True
+                    }
+                }]
+            }
+        }
+    }
+    
+    chart_config_str = json.dumps(chart_config)
+    quickchart_url = f"https://quickchart.io/chart?c={urllib.parse.quote(chart_config_str)}&w=800&h=400&bkg=white"
+    
+    try:
+        print(f"Generating chart image via QuickChart: {quickchart_url}")
+        req = urllib.request.Request(quickchart_url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=10) as response:
+            return response.read()
+    except Exception as e:
+        print(f"Error generating chart image: {e}")
+        return None
+
+def upload_media_to_mastodon(image_bytes, access_token, api_url, verify_ssl):
+    import requests
+    
+    media_url = api_url.replace("/statuses", "/media")
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    files = {
+        "file": ("chart.png", image_bytes, "image/png")
+    }
+    
+    try:
+        print(f"Uploading media to {media_url}...")
+        response = requests.post(media_url, headers=headers, files=files, timeout=20, verify=verify_ssl)
+        response.raise_for_status()
+        res_json = response.json()
+        media_id = res_json.get("id")
+        print(f"Successfully uploaded media! ID: {media_id}")
+        return media_id
+    except Exception as e:
+        print(f"Failed to upload media to Mastodon: {e}")
+        return None
+
+def post_status(status_text, chart_image_bytes=None):
     for url, verify_ssl, extra_headers in URLS_TO_TRY:
+        media_id = None
+        if chart_image_bytes:
+            media_id = upload_media_to_mastodon(chart_image_bytes, ACCESS_TOKEN, url, verify_ssl)
+            
+        data = {"status": status_text}
+        if media_id:
+            data["media_ids"] = [media_id]
+            
+        payload = json.dumps(data).encode("utf-8")
+        
         headers = {
             "Authorization": f"Bearer {ACCESS_TOKEN}",
             "Content-Type": "application/json",
@@ -216,11 +315,12 @@ def start_server():
         
     @app.route("/post-traffic", methods=["POST", "GET"])
     def post_traffic():
-        status_text = fetch_traffic_summary()
-        if not status_text:
+        result = fetch_traffic_summary()
+        if not result:
             return "Failed to fetch traffic summary from page", 500
             
-        res = post_status(status_text)
+        status_text, chart_image_bytes = result
+        res = post_status(status_text, chart_image_bytes)
         if res["success"]:
             return generate_embed_html(res["url"]), 200
         else:
@@ -246,9 +346,10 @@ if __name__ == "__main__":
     if "--server" in sys.argv:
         start_server()
     else:
-        status_text = fetch_traffic_summary()
-        if status_text:
-            post_status(status_text)
+        result = fetch_traffic_summary()
+        if result:
+            status_text, chart_image_bytes = result
+            post_status(status_text, chart_image_bytes)
         else:
             print("Failed to fetch traffic summary, aborting post.")
 
