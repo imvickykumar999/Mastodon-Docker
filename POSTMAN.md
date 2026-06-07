@@ -1,71 +1,49 @@
-# Mastodon Traffic Poster API - Postman / curl Guide
+# Mastodon Traffic Poster API - Postman / curl / OpenClaw Guide
 
-### Postman Collection (Recommended)
-You can import the pre-configured Postman Collection file directly into Postman to have all endpoints loaded with a shared environment variable:
-1. Open Postman, click **Import**, and select the **[`mastodon_api.postman_collection.json`](file:///home/priyanka/projects/mastodonvps/mastodon_api.postman_collection.json)** file.
-2. In Postman, select the collection and go to the **Variables** tab to set your `vps_ip` (defaults to `localhost`). All requests will automatically use it!
+To avoid firewall blocks on port `5050` and NAT loopback issues from inside Docker containers (like OpenClaw), the API is reverse-proxied through Nginx on the standard public HTTPS port (`443`).
 
 ---
 
-### Manual Import via curl
-Alternatively, you can copy any of the `curl` commands below and paste them directly into Postman's **Import** search bar (or click *Import* -> *Raw text* / *Paste raw text*) to quickly generate individual requests.
+## 🚀 1. For External Clients (Postman from your laptop, etc.)
 
-> [!NOTE]
-> For the curl commands, replace `<your-vps-ip>` with the actual IP address or domain of your VPS.
+Use the public reverse proxy URL: **`https://mastodon.24x7stream.shop/mastodon-api/`**
 
----
-
-### 1. Check API Status (`GET`)
-Checks if the Flask API server is online and running.
-
+### Check API Status (`GET`)
 ```bash
-curl -X GET http://<your-vps-ip>:5050/
+curl -X GET https://mastodon.24x7stream.shop/mastodon-api/
 ```
 
-**Expected Response:**
-```json
-{
-  "message": "Mastodon Traffic Poster API is running.",
-  "status": "online"
-}
-```
-
----
-
-### 2. Fetch & Post Traffic Summary (`POST` / `GET`)
-Triggers the script to scrape the page views summary from `https://24x7stream.shop/product/21/` and post the formatted summary directly to your Mastodon instance.
-
+### Fetch & Post Traffic Summary (`POST`)
 ```bash
-curl -X POST http://<your-vps-ip>:5050/post-traffic
-```
-*(Also supports simple `GET` requests if you want to trigger it directly in a browser address bar)*
-
-**Expected Response:**
-```json
-{
-  "success": true,
-  "endpoint": "https://localhost:8443/api/v1/statuses",
-  "post_url": "https://mastodon.24x7stream.shop/@24x7stream/116707112139179739",
-  "posted_content": "📊 Page Views Summary: Starter Streaming Plan..."
-}
+curl -X POST https://mastodon.24x7stream.shop/mastodon-api/post-traffic
 ```
 
----
-
-### 3. Post Custom Status (`POST`)
-Posts a custom status message directly to your Mastodon instance.
-
+### Post Custom Status (`POST`)
 ```bash
-curl -X POST http://<your-vps-ip>:5050/post \
+curl -X POST https://mastodon.24x7stream.shop/mastodon-api/post \
   -H "Content-Type: application/json" \
-  -d '{"status": "Hello from my API server via Postman!"}'
+  -d '{"status": "Hello from my API server via public proxy!"}'
 ```
 
-**Expected Response:**
-```json
-{
-  "success": true,
-  "endpoint": "https://localhost:8443/api/v1/statuses",
-  "post_url": "https://mastodon.24x7stream.shop/@24x7stream/116707112139179739"
-}
+---
+
+## 🤖 2. For OpenClaw / Docker Containers running on the VPS
+
+Because the OpenClaw container runs on a Docker bridge network (`openclawvps_default`), it cannot resolve the host's public IP loopback or localhost directly. 
+
+Instead, use the host's bridge gateway IP: **`http://172.22.0.1:5050/`**
+
+### OpenClaw curl command:
+Run this from the Telegram interface or inside the OpenClaw container:
+```bash
+curl --location --request POST 'http://172.22.0.1:5050/post-traffic'
 ```
+
+---
+
+## 📥 3. Postman Collection
+
+You can import the pre-configured Postman Collection file directly into Postman:
+1. Open Postman, click **Import**, and select the **[`mastodon_api.postman_collection.json`](file:///home/priyanka/projects/mastodonvps/mastodon_api.postman_collection.json)** file.
+2. Under the Collection **Variables** tab:
+   - For public proxy access, set `vps_url` to `https://mastodon.24x7stream.shop/mastodon-api`.
