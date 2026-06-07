@@ -1,0 +1,13 @@
+[Unit]
+Description=Mastodon Traffic Poster API Service
+After=network.target
+
+[Service]
+User=priyanka
+WorkingDirectory=/home/priyanka/projects/mastodonvps
+ExecStart=/usr/bin/python3 main.py --server
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

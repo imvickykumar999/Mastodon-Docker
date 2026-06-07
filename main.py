@@ -4,6 +4,7 @@ import urllib.error
 import ssl
 import os
 import re
+import sys
 
 # Helper to read from .env file
 def load_env(env_path=".env"):
@@ -127,17 +128,89 @@ def post_status(status_text):
                 res_json = json.loads(res_body)
                 print("\nSuccessfully posted!")
                 print(f"Post URL: {res_json.get('url')}")
-                return
+                return {
+                    "success": True,
+                    "url": res_json.get('url'),
+                    "endpoint": url
+                }
         except Exception as e:
             print(f"Failed: {e}\n")
             continue
             
     print("Error: Could not connect to any of the Mastodon endpoints.")
+    return {
+        "success": False,
+        "error": "Could not connect to any of the Mastodon endpoints"
+    }
+
+def start_server():
+    from flask import Flask, jsonify, request
+    
+    app = Flask(__name__)
+    
+    @app.route("/", methods=["GET"])
+    def index():
+        return jsonify({
+            "status": "online",
+            "message": "Mastodon Traffic Poster API is running."
+        })
+        
+    @app.route("/post-traffic", methods=["POST", "GET"])
+    def post_traffic():
+        status_text = fetch_traffic_summary()
+        if not status_text:
+            return jsonify({
+                "success": False,
+                "error": "Failed to fetch traffic summary from page"
+            }), 500
+            
+        res = post_status(status_text)
+        if res["success"]:
+            return jsonify({
+                "success": True,
+                "posted_content": status_text,
+                "post_url": res["url"],
+                "endpoint": res["endpoint"]
+            }), 200
+        else:
+            return jsonify({
+                "success": False,
+                "error": res["error"]
+            }), 500
+            
+    @app.route("/post", methods=["POST"])
+    def post_custom():
+        data = request.get_json(silent=True) or {}
+        status_text = data.get("status")
+        if not status_text:
+            return jsonify({
+                "success": False,
+                "error": "Missing 'status' in request body"
+            }), 400
+            
+        res = post_status(status_text)
+        if res["success"]:
+            return jsonify({
+                "success": True,
+                "post_url": res["url"],
+                "endpoint": res["endpoint"]
+            }), 200
+        else:
+            return jsonify({
+                "success": False,
+                "error": res["error"]
+            }), 500
+
+    print("Starting Flask API server on port 5050...")
+    app.run(host="0.0.0.0", port=5050)
 
 if __name__ == "__main__":
-    status_text = fetch_traffic_summary()
-    if status_text:
-        post_status(status_text)
+    if "--server" in sys.argv:
+        start_server()
     else:
-        print("Failed to fetch traffic summary, aborting post.")
+        status_text = fetch_traffic_summary()
+        if status_text:
+            post_status(status_text)
+        else:
+            print("Failed to fetch traffic summary, aborting post.")
 
